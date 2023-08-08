@@ -4,7 +4,7 @@ import CommentFeed from "@/components/posts/CommentFeed";
 import PostItem from "@/components/posts/PostItem";
 import usePost from "@/hooks/usePost";
 import { useRouter } from "next/router";
-import { ClipLoader } from "react-spinners";
+import { PacmanLoader } from "react-spinners";
 
 const PostView = () => {
 
@@ -16,7 +16,7 @@ const PostView = () => {
   if (isLoading || !fetchedPost) {
     return (
       <div className="flex justify-center items-center h-full">
-        <ClipLoader color="lightblue" size={80} />
+        <PacmanLoader color="lightblue" size={70} />
       </div>
     )
   }

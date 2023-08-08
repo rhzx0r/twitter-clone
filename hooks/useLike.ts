@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import useCurrentUser from "./useCurrentUser"
 import useLoginModal from "./useLoginModal";
 import usePost from "./usePost";
@@ -8,9 +8,10 @@ import axios from "axios";
 
 const useLike = ({ postId, userId } : { postId: string, userId? : string }) => {
 
-  const { data: currentUser } = useCurrentUser();
+  const { data: currentUser, mutate: mutateCurrentUser } = useCurrentUser();
   const { data: fetchedPost, mutate: mutateFetchedPost } = usePost(postId); 
   const { mutate: mutateFetchedPosts } = usePosts(userId);
+  const [isLoading, setIsLoading ] = useState(false);
 
   const loginModal = useLoginModal();
 
@@ -27,6 +28,9 @@ const useLike = ({ postId, userId } : { postId: string, userId? : string }) => {
     }
 
     try {
+
+      setIsLoading(true);
+
       let request;
 
       if (hasLiked) {
@@ -38,17 +42,21 @@ const useLike = ({ postId, userId } : { postId: string, userId? : string }) => {
       await request();
       mutateFetchedPost();
       mutateFetchedPosts()
+      mutateCurrentUser();
       
       toast.success("Success");
+
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
       toast.error("Something went wrong")
     }
-  }, [currentUser, hasLiked, loginModal, mutateFetchedPost, mutateFetchedPosts, postId])
+  }, [currentUser, hasLiked, loginModal, mutateCurrentUser, mutateFetchedPost, mutateFetchedPosts, postId])
 
   return {
     hasLiked,
-    toggleLike
+    toggleLike,
+    isLoading
   }
 }
 

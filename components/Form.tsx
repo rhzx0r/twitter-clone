@@ -20,7 +20,9 @@ const Form: React.FC<FormProps> = ({ placeholder, isComment, postId }) => {
   const registerModal = useRegisterModal();
   const loginModal = useLoginModal();
 
-  const { data: currentUser } = useCurrentUser();
+  // const { data: currentUser } = useCurrentUser();
+  const { data: currentUser, mutate: mutateCurrentUser } = useCurrentUser();
+  // const { mutate: mutateFetchedUser } = useUser(userId);
   const { mutate: mutatePosts } = usePosts();
   const { mutate: mutatePost } = usePost(postId as string);
 
@@ -40,12 +42,13 @@ const Form: React.FC<FormProps> = ({ placeholder, isComment, postId }) => {
       setBody("");
       mutatePosts();
       mutatePost();
+      mutateCurrentUser();
     } catch (error) {
       toast.error("Something went wrong");
     } finally {
       setIsLoading(false);
     }
-  }, [body, isComment, mutatePost, mutatePosts, postId]);
+  }, [body, isComment, mutateCurrentUser, mutatePost, mutatePosts, postId]);
 
   return (
     <div className="border-b-[1px] border-neutral-800 px-5 py-2">

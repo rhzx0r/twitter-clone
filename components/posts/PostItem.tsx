@@ -2,10 +2,11 @@ import useCurrentUser from "@/hooks/useCurrentUser";
 import useLoginModal from "@/hooks/useLoginModal";
 import { formatDistanceToNowStrict } from "date-fns";
 import { useRouter } from "next/router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Avatar from "../Avatar";
 import { AiOutlineHeart, AiFillHeart, AiOutlineMessage } from "react-icons/ai";
 import useLike from "@/hooks/useLike";
+import { BeatLoader } from "react-spinners";
 
 interface PostItemProps {
   data: Record<string, any>;
@@ -13,40 +14,48 @@ interface PostItemProps {
 }
 
 const PostItem: React.FC<PostItemProps> = ({ data, userId }) => {
-
   const router = useRouter();
   const loginModal = useLoginModal();
 
   const { data: currentUser } = useCurrentUser();
-  const { hasLiked, toggleLike } = useLike({ postId: data.id, userId });
+  const { hasLiked, toggleLike, isLoading } = useLike({
+    postId: data.id,
+    userId,
+  });
 
-  const goToUser = useCallback((event: any) => {
-    event.stopPropagation();
-    router.push(`/users/${data.user.id}`);
-  }, [data.user.id, router]);
+  const goToUser = useCallback(
+    (event: any) => {
+      event.stopPropagation();
+      router.push(`/users/${data.user.id}`);
+    },
+    [data.user.id, router]
+  );
 
   const goToPost = useCallback(() => {
     router.push(`/posts/${data.id}`);
   }, [data.id, router]);
 
-  const onLike = useCallback( async (event: any) => {
-    event.stopPropagation();
+  const onLike = useCallback(
+    async (event: any) => {
+      event.stopPropagation();
 
-    if (!currentUser) {
-      return loginModal.onOpen();
-    }
+      if (!currentUser) {
+        return loginModal.onOpen();
+      }
 
-    toggleLike();
-  }, [currentUser, loginModal, toggleLike]);
+      toggleLike();
+    },
+    [currentUser, loginModal, toggleLike]
+  );
 
   const createdAt = useMemo(() => {
     if (!data.createdAt) {
-      return null
+      return null;
     }
 
     return formatDistanceToNowStrict(new Date(data.createdAt));
   }, [data.createdAt]);
-  
+
   const LikedIcon = hasLiked ? AiFillHeart : AiOutlineHeart;
 
   return (
@@ -61,41 +70,38 @@ const PostItem: React.FC<PostItemProps> = ({ data, userId }) => {
             <p
               onClick={goToUser}
               className="text-white font-semibold cursor-pointer hover:underline"
-            >{data.user.name}</p>
-            <span 
+            >
+              {data.user.name}
+            </p>
+            <span
               onClick={goToUser}
               className="text-neutral-500 cursor-pointer hover:underline hidden md:block"
             >
               @{data.user.username}
             </span>
-            <span className="text-neutral-500 text-sm">
-              {createdAt}
-            </span>
+            <span className="text-neutral-500 text-sm">{createdAt}</span>
           </div>
-          <div className="text-white mt-1">
-            {data.body}
-          </div>
+          <div className="text-white mt-1">{data.body}</div>
           <div className="flex flex-row items-center mt-3 gap-10">
             <div className="flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-sky-500">
               <AiOutlineMessage size={20} />
-              <p>
-                {data.comments?.length || 0}
-              </p>
+              <p>{data.comments?.length || 0}</p>
             </div>
-            <div 
-              onClick={onLike}
-              className="flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-red-500"
-            >
-              <LikedIcon size={20} color={hasLiked ? 'red' : ''}/>
-              <p>
-                {data.likeIds?.length}
-              </p>
+            <div className="flex flex-row items-center text-neutral-500 gap-2 cursor-pointer transition hover:text-red-500">
+              {isLoading ? <BeatLoader size={5} color="white"/> : <><LikedIcon
+                  size={20}
+                  onClick={onLike}
+                  disabled={isLoading}
+                  color={hasLiked ? "red" : ""}
+                />
+                <p>{data.likeIds?.length}</p>
+              </>}
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-}
- 
+};
+
 export default PostItem;
